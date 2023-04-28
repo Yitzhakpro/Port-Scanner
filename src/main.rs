@@ -14,7 +14,7 @@ fn main() {
     let cli = PortScannerArgs::parse();
     let ip = cli.ip;
     let ports = cli.ports;
-    let _udp = cli.udp;
+    let udp = cli.udp;
 
     let (tx, rx): (mpsc::Sender<u16>, mpsc::Receiver<u16>) = mpsc::channel();
 
@@ -26,7 +26,7 @@ fn main() {
         let socket_addr = get_socket_addr(&ip, &port_clone);
 
         let _handle: thread::JoinHandle<()> = thread::spawn(move || {
-            let is_up = is_port_up(socket_addr, 5);
+            let is_up = is_port_up(socket_addr, 5, udp);
             if is_up {
                 println!("port {} is up on host: {}", port_clone, ip);
             } else {
