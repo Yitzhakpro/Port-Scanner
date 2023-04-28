@@ -7,11 +7,13 @@ pub struct PortScannerArgs {
     #[arg(long)]
     pub ip: String,
 
-    /// list of ports to scan seperated by: ,
-    #[arg(short, long,
-        value_delimiter = ',',
-    )]
+    /// list of ports to scan separated by: ,
+    #[arg(short, long, value_delimiter = ',')]
     pub ports: Vec<u16>,
+
+    /// should scan udp protocol
+    #[arg(long, default_value_t= false)]
+    pub udp: bool,
 
     /// output file
     #[arg(short, long, default_value = "output.txt")]
