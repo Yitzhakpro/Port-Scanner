@@ -12,12 +12,12 @@ pub struct PortScannerArgs {
     pub ports: Vec<u16>,
 
     /// should scan udp protocol
-    #[arg(long, default_value_t= false)]
+    #[arg(long, default_value_t = false)]
     pub udp: bool,
 
     /// output file
-    #[arg(short, long, default_value = "output.txt")]
-    pub output: String,
+    #[arg(short, long)]
+    pub output: Option<String>,
 
     /// output more info of the scan
     #[arg(short, long, default_value_t = false)]

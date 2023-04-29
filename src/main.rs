@@ -3,15 +3,14 @@ extern crate core;
 mod network;
 mod scanner_args;
 
-use std::sync::mpsc;
-use std::{fs, thread};
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
 use clap::Parser;
 use network::{get_socket_addr, is_port_up};
 use scanner_args::PortScannerArgs;
-
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+use std::sync::mpsc;
+use std::{fs, thread};
 
 fn main() {
     let cli = PortScannerArgs::parse();
@@ -25,9 +24,7 @@ fn main() {
 
     let (tx, rx): (mpsc::Sender<(u16, bool)>, mpsc::Receiver<(u16, bool)>) = mpsc::channel();
 
-    if verbose {
-        println!("Starting port scan on: {}", ip);
-    }
+    println!("Starting port scan on: {}", ip);
 
     for port in ports.iter() {
         let tx = tx.clone();
@@ -55,29 +52,37 @@ fn main() {
         }
     }
 
-    if verbose {
-        println!("Finished port scanning on: {}", ip);
-    }
-
-    // getting path and creating non-existing directories
-    let output_path = Path::new(&output);
-    if let Some(parent_dir) = output_path.parent() {
-        fs::create_dir_all(parent_dir).unwrap();
-    }
-    let mut output_file = match File::create(&output_path) {
-        Err(why) => panic!("Could not create output file, because {}", why),
-        Ok(file) => file,
-    };
-
+    // print results
+    println!("\nFinished port scanning on: {}", ip);
+    println!("Open ports:");
     for port in open_ports.iter() {
-        let line = format!("Port {} is open on {}\n", port, ip);
-        match output_file.write(line.as_bytes()) {
-            Err(_why) => println!("Could write: {} to the output file", line),
-            Ok(_) => {}
-        }
+        println!("Port {} is open on {}", port, ip);
     }
 
-    if verbose {
-        println!("Created output file in: {}", output)
+    // creating output file
+    if output.is_some() {
+        let output_param = output.unwrap();
+
+        // getting path and creating non-existing directories
+        let output_path = Path::new(&output_param);
+        if let Some(parent_dir) = output_path.parent() {
+            fs::create_dir_all(parent_dir).unwrap();
+        }
+        let mut output_file = match File::create(&output_path) {
+            Err(why) => panic!("Could not create output file, because {}", why),
+            Ok(file) => file,
+        };
+
+        for port in open_ports.iter() {
+            let line = format!("Port {} is open on {}\n", port, ip);
+            match output_file.write(line.as_bytes()) {
+                Err(_why) => println!("Could write: {} to the output file", line),
+                Ok(_) => {}
+            }
+        }
+
+        if verbose {
+            println!("Created output file in {}", output_param);
+        }
     }
 }

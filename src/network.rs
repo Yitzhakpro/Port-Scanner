@@ -4,11 +4,7 @@ use std::time::Duration;
 
 pub fn get_socket_addr(ip: &str, port: &u16) -> SocketAddr {
     let full_host: String = format!("{}:{}", ip, port);
-    let socket_addr = full_host
-        .to_socket_addrs()
-        .unwrap()
-        .next()
-        .unwrap();
+    let socket_addr = full_host.to_socket_addrs().unwrap().next().unwrap();
 
     return socket_addr;
 }
@@ -17,7 +13,9 @@ pub fn get_socket_addr(ip: &str, port: &u16) -> SocketAddr {
 pub fn is_udp_port_up(socket_addr: &SocketAddr, timeout: u64) -> bool {
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
-    socket.set_read_timeout(Some(std::time::Duration::from_secs(timeout))).ok();
+    socket
+        .set_read_timeout(Some(Duration::from_secs(timeout)))
+        .ok();
 
     let message = b"check";
     if let Ok(_) = socket.send_to(message, socket_addr) {
