@@ -4,7 +4,10 @@ mod network;
 mod scanner_args;
 
 use std::sync::mpsc;
-use std::thread;
+use std::{fs, thread};
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 use clap::Parser;
 use network::{get_socket_addr, is_port_up};
 use scanner_args::PortScannerArgs;
@@ -54,11 +57,27 @@ fn main() {
 
     if verbose {
         println!("Finished port scanning on: {}", ip);
-        println!("Creating output file in: {}", output)
     }
 
-    // TODO: create a result file
+    // getting path and creating non-existing directories
+    let output_path = Path::new(&output);
+    if let Some(parent_dir) = output_path.parent() {
+        fs::create_dir_all(parent_dir).unwrap();
+    }
+    let mut output_file = match File::create(&output_path) {
+        Err(why) => panic!("Could not create output file, because {}", why),
+        Ok(file) => file,
+    };
+
     for port in open_ports.iter() {
-        println!("Port {} is open on {}", port, ip);
+        let line = format!("Port {} is open on {}\n", port, ip);
+        match output_file.write(line.as_bytes()) {
+            Err(_why) => println!("Could write: {} to the output file", line),
+            Ok(_) => {}
+        }
+    }
+
+    if verbose {
+        println!("Created output file in: {}", output)
     }
 }
